@@ -1,7 +1,7 @@
 const rows = 12;
 const cols = 6;
 const container = document.querySelector(".container");
-const clickSound = new Audio("Click_sound.mp3");
+const clickSound = new Audio("Click_Sound.mp3");
 const bombSound = new Audio("meme_bomb_sound.mp3");
 let teleportA = null;
 let teleportB = null;
