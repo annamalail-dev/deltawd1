@@ -1,0 +1,92 @@
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: red;
+  transition: background 0.4s ease;
+}
+
+body.player1 {
+  background:red;
+}
+
+body.player2 {
+  background: blue;
+}
+.teleport {
+  background-color: black;
+}
+.bomb {
+  background-color: red;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+.container {
+  display: grid;
+  background-color: aliceblue;
+  grid-template-columns: repeat(6, 42px);
+  grid-template-rows: repeat(12, 42px);
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.cell {
+  width: 42px;
+  height: 42px;
+  border: 0.5px solid black;
+  position: relative;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.red {
+  background: red;
+}
+
+.blue {
+  background: blue;
+}
+
+header {
+  color:white;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.headings {
+  display: flex;
+  gap: 20px;
+  color:white;
+  margin-top: 10px;
+  align-items: center;
+}
+
+#pausebtn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #333;
+  color: white;
+  cursor: pointer;
+}
+footer {
+  margin-top: 20px;
+  color: white;
+}
+#scoreboard{
+  display:flex;
+  flex-direction: row;
+  gap:100px;
+  margin:15px;
+}
