@@ -11,7 +11,12 @@ body {
   background: red;
   transition: background 0.4s ease;
 }
-
+.btns{
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+  gap: 1rem;
+}
 body.player1 {
   background:red;
 }
@@ -24,7 +29,7 @@ body.player2 {
 }
 .bomb {
   background-color: red;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }
 .container {
   display: grid;
@@ -89,4 +94,24 @@ footer {
   flex-direction: row;
   gap:100px;
   margin:15px;
+}
+#redobtn{
+  margin-top: 15px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #333;
+  color: white;
+  cursor: pointer;
+}
+
+#undobtn{
+  margin-top: 15px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #333;
+  color: white;
+  cursor: pointer;
+
 }
