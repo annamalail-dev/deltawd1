@@ -28,29 +28,21 @@ function explodeBomb(r, c) {
     for (let dc = -1; dc <= 1; dc++) {
       let nr = r + dr;
       let nc = c + dc;
-
-      // ✅ stay inside grid
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
 
       let cell = board[nr][nc];
 
-      // ✅ subtract totals correctly
       if (cell.owner === 1) redTotal -= cell.count;
       else if (cell.owner === 2) blueTotal -= cell.count;
 
-      // ✅ CLEAR DATA
       cell.count = 0;
       cell.owner = null;
-
-      // ✅ CLEAR UI (VERY IMPORTANT)
       cell.el.innerHTML = "";
-      cell.el.classList.remove("red", "blue"); // if you use colors
+      cell.el.classList.remove("red", "blue");
     }
   }
-  // remove bomb styling
   let bombEl = board[r][c].el;
   bombEl.classList.remove("bomb");
-  // remove bomb after use
   bombCell = null;
 }
 
@@ -134,7 +126,7 @@ function generateTeleports() {
 
 function initBoard() {
   generateTeleports();
-  generateBomb(); // ✅ added
+  generateBomb();
 
   container.innerHTML = "";
   board = [];
@@ -147,16 +139,12 @@ function initBoard() {
 
     for (let c = 0; c < cols; c++) {
       let cell = document.createElement("div");
-
-      // teleport
       if (
         (r === teleportA[0] && c === teleportA[1]) ||
         (r === teleportB[0] && c === teleportB[1])
       ) {
         cell.classList.add("teleport");
       }
-
-      // 💣 bomb
       if (bombCell && r === bombCell[0] && c === bombCell[1]) {
         cell.classList.add("bomb");
       }
@@ -451,8 +439,8 @@ pauseBtn.addEventListener("click", () => {
   pauseBtn.innerText = isPaused ? "Resume" : "Pause";
 });
 
-document.getElementById("undoBtn").addEventListener("click", undo);
-document.getElementById("redoBtn").addEventListener("click", redo);
+document.getElementById("undobtn").addEventListener("click", undo);
+document.getElementById("redobtn").addEventListener("click", redo);
 initBoard();
 updateDotCount();
 startTimers();
