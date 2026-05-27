@@ -444,3 +444,5 @@ document.getElementById("redobtn").addEventListener("click", redo);
 initBoard();
 updateDotCount();
 startTimers();
+
+//Hello
