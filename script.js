@@ -29,28 +29,22 @@ function explodeBomb(r, c) {
       let nr = r + dr;
       let nc = c + dc;
 
-      // ✅ stay inside grid
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
 
       let cell = board[nr][nc];
 
-      // ✅ subtract totals correctly
       if (cell.owner === 1) redTotal -= cell.count;
       else if (cell.owner === 2) blueTotal -= cell.count;
 
-      // ✅ CLEAR DATA
       cell.count = 0;
       cell.owner = null;
 
-      // ✅ CLEAR UI (VERY IMPORTANT)
       cell.el.innerHTML = "";
-      cell.el.classList.remove("red", "blue"); // if you use colors
+      cell.el.classList.remove("red", "blue");
     }
   }
-  // remove bomb styling
   let bombEl = board[r][c].el;
   bombEl.classList.remove("bomb");
-  // remove bomb after use
   bombCell = null;
 }
 
@@ -296,7 +290,6 @@ function explodeChain() {
           targetC = teleportA[1] - 1;
         }
 
-        // ✅ make sure inside grid
         if (targetC < 0) targetC = 0;
         if (targetC >= cols) targetC = cols - 1;
         let targetCell = board[targetR][targetC];
@@ -307,7 +300,6 @@ function explodeChain() {
         if (owner === 1) redTotal++;
         else blueTotal++;
 
-        // 💣 BOMB CHECK (THIS WAS MISSING)
         if (bombCell && targetR === bombCell[0] && targetC === bombCell[1]) {
           explodeBomb(targetR, targetC);
           return;
@@ -451,8 +443,8 @@ pauseBtn.addEventListener("click", () => {
   pauseBtn.innerText = isPaused ? "Resume" : "Pause";
 });
 
-document.getElementById("undoBtn").addEventListener("click", undo);
-document.getElementById("redoBtn").addEventListener("click", redo);
+document.getElementById("undobtn").addEventListener("click", undo);
+document.getElementById("redobtn").addEventListener("click", redo);
 initBoard();
 updateDotCount();
 startTimers();

@@ -80,6 +80,24 @@ header {
   color: white;
   cursor: pointer;
 }
+#redobtn{
+  margin-top: 15px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #333;
+  color: white;
+  cursor: pointer;
+}
+#undobtn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #333;
+  color: white;
+  cursor: pointer;
+}
 footer {
   margin-top: 20px;
   color: white;
@@ -89,4 +107,9 @@ footer {
   flex-direction: row;
   gap:100px;
   margin:15px;
+}
+.btns{
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
 }
