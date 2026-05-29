@@ -103,6 +103,11 @@ function saveState() {
     blueTotal,
     gameTime,
     turnTime,
+
+    // ✅ ADD THESE
+    bombCell: bombCell ? [...bombCell] : null,
+    teleportA: teleportA ? [...teleportA] : null,
+    teleportB: teleportB ? [...teleportB] : null,
   };
 
   history.push(JSON.stringify(state));
@@ -113,19 +118,22 @@ function loadState(stateStr) {
   const state = JSON.parse(stateStr);
 
   currentPlayer = state.currentPlayer;
-  firstMove = state.firstMove;
+  firstMove = { ...state.firstMove };
   redTotal = state.redTotal;
   blueTotal = state.blueTotal;
   gameTime = state.gameTime;
   turnTime = state.turnTime;
 
+  // 🔁 Restore board safely
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       board[r][c].count = state.board[r][c].count;
       board[r][c].owner = state.board[r][c].owner;
     }
   }
-
+  bombCell = state.bombCell ? [...state.bombCell] : null;
+  teleportA = state.teleportA ? [...state.teleportA] : null;
+  teleportB = state.teleportB ? [...state.teleportB] : null;
   render();
   updateDotCount();
   updateDisplay();
@@ -150,6 +158,7 @@ function redo() {
   history.push(state);
   loadState(state);
 }
+
 function generateTeleports() {
   while (true) {
     let r1 = Math.floor(Math.random() * (rows - 2)) + 1;
@@ -222,8 +231,36 @@ function getCapacity(r, c) {
 function handleClick(r, c) {
   if (isPaused) return;
 
+  // 🚫 BLOCK TELEPORT + BOMB
+  if (
+    (bombCell && r === bombCell[0] && c === bombCell[1]) ||
+    (r === teleportA[0] && c === teleportA[1]) ||
+    (r === teleportB[0] && c === teleportB[1])
+  ) {
+    return;
+  }
+
+  // 💣 BOMB CLICK → ONLY EXPLODE (NO DOT PLACEMENT)
+  if (bombCell && r === bombCell[0] && c === bombCell[1]) {
+    console.log("💣 Bomb clicked");
+
+    setTimeout(() => {
+      explodeBomb(r, c);
+
+      render();
+      updateDotCount();
+
+      if (checkWinner()) {
+        clearAllTimers();
+      }
+    }, 300); // matches animation delay
+
+    return;
+  }
+
   let cell = board[r][c];
 
+  // ❌ cannot play on opponent cell
   if (cell.owner !== null && cell.owner !== currentPlayer) return;
 
   let willExplode = false;
@@ -248,6 +285,7 @@ function handleClick(r, c) {
     else blueTotal += added;
   } else {
     if (cell.owner === null) return;
+
     if (cell.count + 1 >= getCapacity(r, c)) {
       willExplode = true;
     }
@@ -265,9 +303,11 @@ function handleClick(r, c) {
   }
 
   explodeChain();
+
   if (checkWinner()) {
     clearAllTimers();
   }
+
   render();
   updateDotCount();
 
@@ -284,6 +324,7 @@ function handleClick(r, c) {
 function explodeChain() {
   let queue = [];
 
+  // 🔍 find all exploding cells
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (board[r][c].count >= getCapacity(r, c)) {
@@ -300,12 +341,12 @@ function explodeChain() {
 
     let owner = cell.owner;
 
+    // 💥 explode current cell
     cell.count = 0;
     cell.owner = null;
+
     bombSound.currentTime = 0;
     bombSound.play();
-
-    let triggeredBomb = null;
 
     let dirs = [
       [1, 0],
@@ -319,11 +360,10 @@ function explodeChain() {
       let nc = c + dc;
 
       if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-        let neighbor = board[nr][nc];
-
         let targetR = nr;
         let targetC = nc;
 
+        // 🌀 TELEPORT LOGIC
         if (nr === teleportA[0] && nc === teleportA[1]) {
           targetR = teleportB[0];
           targetC = teleportB[1] - 1;
@@ -334,34 +374,35 @@ function explodeChain() {
 
         if (targetC < 0) targetC = 0;
         if (targetC >= cols) targetC = cols - 1;
+
+        // 💣 IF TARGET IS BOMB → TRIGGER, DO NOT ADD DOT
+        if (bombCell && targetR === bombCell[0] && targetC === bombCell[1]) {
+          explodeBomb(targetR, targetC);
+          continue; // 🚫 do NOT modify bomb cell
+        }
+
         let targetCell = board[targetR][targetC];
 
+        // ✅ normal distribution
         targetCell.count++;
         targetCell.owner = owner;
 
         if (owner === 1) redTotal++;
         else blueTotal++;
 
-        if (bombCell && targetR === bombCell[0] && targetC === bombCell[1]) {
-          triggeredBomb = [targetR, targetC];
-          continue;
-        }
-
+        // 🔁 chain reaction
         if (targetCell.count >= getCapacity(targetR, targetC)) {
           queue.push([targetR, targetC]);
         }
       }
     }
-
-    if (triggeredBomb) {
-      explodeBomb(triggeredBomb[0], triggeredBomb[1]);
-    }
   }
 }
 
 function render() {
-  document.querySelectorAll(".cell").forEach((cell) => {
-    cell.innerHTML = "";
+  document.querySelectorAll(".cell").forEach((el) => {
+    el.innerHTML = "";
+    el.className = "cell"; // 🔁 reset ALL classes
   });
 
   for (let r = 0; r < rows; r++) {
@@ -369,6 +410,21 @@ function render() {
       let cell = board[r][c];
       let el = cell.el;
 
+      // 💣 APPLY BOMB FIRST (highest priority)
+      if (bombCell && r === bombCell[0] && c === bombCell[1]) {
+        el.classList.add("bomb");
+        continue; // 🚫 skip dots
+      }
+
+      // 🌀 TELEPORT STYLING (optional if you have CSS)
+      if (teleportA && r === teleportA[0] && c === teleportA[1]) {
+        el.classList.add("teleport");
+      }
+      if (teleportB && r === teleportB[0] && c === teleportB[1]) {
+        el.classList.add("teleport");
+      }
+
+      // 🔴🔵 DRAW DOTS
       if (cell.owner) {
         for (let i = 0; i < cell.count; i++) {
           let dot = document.createElement("div");
