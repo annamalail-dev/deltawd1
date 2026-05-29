@@ -26,10 +26,16 @@ function generateBomb() {
 
     valid = true;
 
-    // ❌ avoid teleport + adjacent
     let dirs = [
-      [0,0],[1,0],[-1,0],[0,1],[0,-1],
-      [1,1],[1,-1],[-1,1],[-1,-1]
+      [0, 0],
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+      [1, 1],
+      [1, -1],
+      [-1, 1],
+      [-1, -1],
     ];
 
     for (let [dr, dc] of dirs) {
@@ -47,7 +53,7 @@ function generateBomb() {
 
     if (valid) {
       bombCell = [r, c];
-      console.log("💣 Bomb:", r, c);
+      console.log("Bomb:", r, c);
     }
   }
 }
@@ -57,7 +63,6 @@ function explodeBomb(r, c) {
 
   for (let dr = -1; dr <= 1; dr++) {
     for (let dc = -1; dc <= 1; dc++) {
-
       let nr = r + dr;
       let nc = c + dc;
 
@@ -81,7 +86,7 @@ function explodeBomb(r, c) {
 
   bombCell = null;
 
-  console.log("💥 exploded");
+  console.log("exploded");
 }
 
 function saveState() {
@@ -186,7 +191,6 @@ function initBoard() {
         cell.classList.add("teleport");
       }
 
-      // 💣 bomb
       if (bombCell && r === bombCell[0] && c === bombCell[1]) {
         cell.classList.add("bomb");
       }
@@ -301,6 +305,8 @@ function explodeChain() {
     bombSound.currentTime = 0;
     bombSound.play();
 
+    let triggeredBomb = null;
+
     let dirs = [
       [1, 0],
       [-1, 0],
@@ -320,7 +326,7 @@ function explodeChain() {
 
         if (nr === teleportA[0] && nc === teleportA[1]) {
           targetR = teleportB[0];
-          targetC = teleportB[1]-1;
+          targetC = teleportB[1] - 1;
         } else if (nr === teleportB[0] && nc === teleportB[1]) {
           targetR = teleportA[0];
           targetC = teleportA[1] - 1;
@@ -337,14 +343,18 @@ function explodeChain() {
         else blueTotal++;
 
         if (bombCell && targetR === bombCell[0] && targetC === bombCell[1]) {
-          explodeBomb(targetR, targetC);
-          return;
+          triggeredBomb = [targetR, targetC];
+          continue;
         }
 
         if (targetCell.count >= getCapacity(targetR, targetC)) {
           queue.push([targetR, targetC]);
         }
       }
+    }
+
+    if (triggeredBomb) {
+      explodeBomb(triggeredBomb[0], triggeredBomb[1]);
     }
   }
 }
@@ -400,13 +410,32 @@ function checkWinner() {
       }, 300);
       return true;
     }
+
     if (blue && !red) {
       setTimeout(() => {
         alert("🔵 Blue Wins!");
         location.reload();
       }, 300);
+      return true;
+    }
+
+    if (!red && !blue) {
+      redTotal = 0;
+      blueTotal = 0;
+
+      document.getElementById("redCount").textContent = "🔴 Red: " + redTotal;
+      document.getElementById("blueCount").textContent =
+        "🔵 Blue: " + blueTotal;
+
+      setTimeout(() => {
+        alert("Everyone was wiped out! It's a Draw!");
+        location.reload();
+      }, 300);
+      return true;
     }
   }
+
+  return false;
 }
 
 let gameTime = 600;
