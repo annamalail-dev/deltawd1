@@ -103,8 +103,6 @@ function saveState() {
     blueTotal,
     gameTime,
     turnTime,
-
-    // ✅ ADD THESE
     bombCell: bombCell ? [...bombCell] : null,
     teleportA: teleportA ? [...teleportA] : null,
     teleportB: teleportB ? [...teleportB] : null,
@@ -124,7 +122,6 @@ function loadState(stateStr) {
   gameTime = state.gameTime;
   turnTime = state.turnTime;
 
-  // 🔁 Restore board safely
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       board[r][c].count = state.board[r][c].count;
@@ -191,8 +188,6 @@ function initBoard() {
 
     for (let c = 0; c < cols; c++) {
       let cell = document.createElement("div");
-
-      // teleport
       if (
         (r === teleportA[0] && c === teleportA[1]) ||
         (r === teleportB[0] && c === teleportB[1])
@@ -230,8 +225,6 @@ function getCapacity(r, c) {
 
 function handleClick(r, c) {
   if (isPaused) return;
-
-  // 🚫 BLOCK TELEPORT + BOMB
   if (
     (bombCell && r === bombCell[0] && c === bombCell[1]) ||
     (r === teleportA[0] && c === teleportA[1]) ||
@@ -239,10 +232,8 @@ function handleClick(r, c) {
   ) {
     return;
   }
-
-  // 💣 BOMB CLICK → ONLY EXPLODE (NO DOT PLACEMENT)
   if (bombCell && r === bombCell[0] && c === bombCell[1]) {
-    console.log("💣 Bomb clicked");
+    console.log("Bomb clicked");
 
     setTimeout(() => {
       explodeBomb(r, c);
@@ -253,14 +244,12 @@ function handleClick(r, c) {
       if (checkWinner()) {
         clearAllTimers();
       }
-    }, 300); // matches animation delay
+    }, 300);
 
     return;
   }
 
   let cell = board[r][c];
-
-  // ❌ cannot play on opponent cell
   if (cell.owner !== null && cell.owner !== currentPlayer) return;
 
   let willExplode = false;
@@ -323,8 +312,6 @@ function handleClick(r, c) {
 
 function explodeChain() {
   let queue = [];
-
-  // 🔍 find all exploding cells
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (board[r][c].count >= getCapacity(r, c)) {
@@ -340,8 +327,6 @@ function explodeChain() {
     if (cell.count < getCapacity(r, c)) continue;
 
     let owner = cell.owner;
-
-    // 💥 explode current cell
     cell.count = 0;
     cell.owner = null;
 
@@ -362,8 +347,6 @@ function explodeChain() {
       if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
         let targetR = nr;
         let targetC = nc;
-
-        // 🌀 TELEPORT LOGIC
         if (nr === teleportA[0] && nc === teleportA[1]) {
           targetR = teleportB[0];
           targetC = teleportB[1] - 1;
@@ -375,22 +358,19 @@ function explodeChain() {
         if (targetC < 0) targetC = 0;
         if (targetC >= cols) targetC = cols - 1;
 
-        // 💣 IF TARGET IS BOMB → TRIGGER, DO NOT ADD DOT
         if (bombCell && targetR === bombCell[0] && targetC === bombCell[1]) {
           explodeBomb(targetR, targetC);
-          continue; // 🚫 do NOT modify bomb cell
+          continue;
         }
 
         let targetCell = board[targetR][targetC];
 
-        // ✅ normal distribution
         targetCell.count++;
         targetCell.owner = owner;
 
         if (owner === 1) redTotal++;
         else blueTotal++;
 
-        // 🔁 chain reaction
         if (targetCell.count >= getCapacity(targetR, targetC)) {
           queue.push([targetR, targetC]);
         }
@@ -402,7 +382,7 @@ function explodeChain() {
 function render() {
   document.querySelectorAll(".cell").forEach((el) => {
     el.innerHTML = "";
-    el.className = "cell"; // 🔁 reset ALL classes
+    el.className = "cell";
   });
 
   for (let r = 0; r < rows; r++) {
@@ -410,13 +390,11 @@ function render() {
       let cell = board[r][c];
       let el = cell.el;
 
-      // 💣 APPLY BOMB FIRST (highest priority)
       if (bombCell && r === bombCell[0] && c === bombCell[1]) {
         el.classList.add("bomb");
-        continue; // 🚫 skip dots
+        continue;
       }
 
-      // 🌀 TELEPORT STYLING (optional if you have CSS)
       if (teleportA && r === teleportA[0] && c === teleportA[1]) {
         el.classList.add("teleport");
       }
@@ -424,7 +402,6 @@ function render() {
         el.classList.add("teleport");
       }
 
-      // 🔴🔵 DRAW DOTS
       if (cell.owner) {
         for (let i = 0; i < cell.count; i++) {
           let dot = document.createElement("div");
