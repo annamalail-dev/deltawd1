@@ -18,14 +18,46 @@ let blueTotal = 0;
 let history = [];
 let redoStack = [];
 function generateBomb() {
-  let r = Math.floor(Math.random() * (rows - 2)) + 1;
-  let c = Math.floor(Math.random() * (cols - 2)) + 1;
+  let valid = false;
 
-  bombCell = [r, c];
+  while (!valid) {
+    let r = Math.floor(Math.random() * (rows - 2)) + 1;
+    let c = Math.floor(Math.random() * (cols - 2)) + 1;
+
+    valid = true;
+
+    // ❌ avoid teleport + adjacent
+    let dirs = [
+      [0,0],[1,0],[-1,0],[0,1],[0,-1],
+      [1,1],[1,-1],[-1,1],[-1,-1]
+    ];
+
+    for (let [dr, dc] of dirs) {
+      let nr = r + dr;
+      let nc = c + dc;
+
+      if (
+        (nr === teleportA[0] && nc === teleportA[1]) ||
+        (nr === teleportB[0] && nc === teleportB[1])
+      ) {
+        valid = false;
+        break;
+      }
+    }
+
+    if (valid) {
+      bombCell = [r, c];
+      console.log("💣 Bomb:", r, c);
+    }
+  }
 }
 function explodeBomb(r, c) {
+  let removedRed = 0;
+  let removedBlue = 0;
+
   for (let dr = -1; dr <= 1; dr++) {
     for (let dc = -1; dc <= 1; dc++) {
+
       let nr = r + dr;
       let nc = c + dc;
 
@@ -33,19 +65,23 @@ function explodeBomb(r, c) {
 
       let cell = board[nr][nc];
 
-      if (cell.owner === 1) redTotal -= cell.count;
-      else if (cell.owner === 2) blueTotal -= cell.count;
+      if (cell.owner === 1) removedRed += cell.count;
+      else if (cell.owner === 2) removedBlue += cell.count;
 
       cell.count = 0;
       cell.owner = null;
 
       cell.el.innerHTML = "";
-      cell.el.classList.remove("red", "blue");
+      cell.el.classList.remove("red", "blue", "bomb");
     }
   }
-  let bombEl = board[r][c].el;
-  bombEl.classList.remove("bomb");
+
+  redTotal -= removedRed;
+  blueTotal -= removedBlue;
+
   bombCell = null;
+
+  console.log("💥 exploded");
 }
 
 function saveState() {
@@ -128,7 +164,7 @@ function generateTeleports() {
 
 function initBoard() {
   generateTeleports();
-  generateBomb(); // ✅ added
+  generateBomb();
 
   container.innerHTML = "";
   board = [];
@@ -284,7 +320,7 @@ function explodeChain() {
 
         if (nr === teleportA[0] && nc === teleportA[1]) {
           targetR = teleportB[0];
-          targetC = teleportB[1] - 1;
+          targetC = teleportB[1]-1;
         } else if (nr === teleportB[0] && nc === teleportB[1]) {
           targetR = teleportA[0];
           targetC = teleportA[1] - 1;
